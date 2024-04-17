@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('currencies', function (Blueprint $table) {
-            $table->id();
-            $table->string('code', 100)->unique();
-            $table->longText('description')->nullable();
-            $table->timestamps();
+        Schema::table('currencies', function (Blueprint $table) {
+            $table->float("rate",10000000,18)->nullable();
         });
     }
 
@@ -24,6 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('currencies');
+        //
     }
 };

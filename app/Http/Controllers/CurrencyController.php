@@ -59,6 +59,7 @@ class CurrencyController extends Controller
         $data = $request->validate([
             'description' => 'sometimes|string',
             'code' => ['sometimes', 'string'],
+            'status' => ['sometimes', 'numeric'],
         ]);
         $currency = $this->currencyService->updateCurrency($id, $data);
         return success('update currency', 200, $currency->toArray());

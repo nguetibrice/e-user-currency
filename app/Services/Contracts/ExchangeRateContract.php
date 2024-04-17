@@ -10,9 +10,8 @@ interface ExchangeRateContract
      * Save list of given exchange rates in database
      *
      * @param ExchangeRate[] $exchangeRates
-     * @return void
      */
-    public function saveMany(array $exchangeRates): void;
+    public function saveMany(array $exchangeRates);
 
     /**
      * Gets list of exchange rates for a given date
@@ -20,5 +19,5 @@ interface ExchangeRateContract
      * @param string $date
      * @return ExchangeRate[]
      */
-    public function fetchByDate(string $date): array;
+    public function fetchByDate(string $date);
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\TestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,3 +28,4 @@ Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencie
 Route::get('/currency/show/{id}', [CurrencyController::class, 'show'])->name('currency.show');
 Route::post('/currency/store', [CurrencyController::class, 'store'])->name('currency.store');
 Route::delete('/currency/delete/{id}', [CurrencyController::class, 'delete'])->name('currency.delete');
+Route::get('/test', [TestController::class, 'index']);

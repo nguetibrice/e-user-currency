@@ -22,6 +22,7 @@ class ExchangeRateJob implements ShouldQueue
     protected ExchangeRateApiContract $apiExchangeRatesService;
     protected ExchangeRateContract $exchangeRateService;
     protected ICurrencyService $currencyService;
+    protected string $currency;
 
     /**
      * ExchangeRateJob constructor.
@@ -29,15 +30,18 @@ class ExchangeRateJob implements ShouldQueue
      * @param ExchangeRateApiContract $apiExchangeRatesService
      * @param ExchangeRateContract $exchangeRateService
      * @param ICurrencyService $currencyService
+     * @param string $currency
      */
     public function __construct(
         ExchangeRateApiContract $apiExchangeRatesService,
         ExchangeRateContract $exchangeRateService,
-        ICurrencyService $currencyService
+        ICurrencyService $currencyService,
+        string $currency,
     ) {
         $this->apiExchangeRatesService = $apiExchangeRatesService;
         $this->exchangeRateService = $exchangeRateService;
         $this->currencyService = $currencyService;
+        $this->currency = $currency;
     }
 
     /**
@@ -46,10 +50,8 @@ class ExchangeRateJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            // todo get base currency from .env file
-            $currency = env("DEFAULT_CURRENCY");
             // todo get exchange rates from the external api
-            $rates = $this->apiExchangeRatesService->fetch($currency);
+            $rates = $this->apiExchangeRatesService->fetch($this->currency);
             // todo get list of active currencies (currencies with status = 1)
             $currencies = $this->currencyService->getCurrenciesByKey("status", 1);
 
@@ -58,9 +60,11 @@ class ExchangeRateJob implements ShouldQueue
                     if(strtoupper($currency->code) == strtoupper($rate["asset_id_quote"])) {
                         // todo save exchange rates for active currencies only
                         $exchange_rate = new ExchangeRate([
-                            "currency_id" => $currency->id,
-                            "rate" => $rate["rate"]
+                            "target_currency" => $currency->code,
+                            "rate" => round($rate["rate"], 5)
                         ]);
+                        $currency->rate = round($rate["rate"], 5);
+                        $currency->save();
                         $data[] = $exchange_rate;
                     }
                 }
