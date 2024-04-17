@@ -4,14 +4,13 @@ namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Reflector;
-use Illuminate\Validation\ValidationException;
 use PDOException;
+use Illuminate\Validation\ValidationException;
 use Psr\Log\LoggerInterface;
-use Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Throwable;
@@ -19,16 +18,25 @@ use Throwable;
 class Handler extends ExceptionHandler
 {
     /**
+     * A list of exception types with their corresponding custom log levels.
+     *
+     * @var array<class-string<\Throwable>, \Psr\Log\LogLevel::*>
+     */
+    protected $levels = [
+        //
+    ];
+
+    /**
      * A list of the exception types that are not reported.
      *
-     * @var array<int, class-string<Throwable>>
+     * @var array<int, class-string<\Throwable>>
      */
     protected $dontReport = [
         //
     ];
 
     /**
-     * A list of the inputs that are never flashed for validation exceptions.
+     * A list of the inputs that are never flashed to the session on validation exceptions.
      *
      * @var array<int, string>
      */
@@ -45,47 +53,41 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(
-            function (Throwable $e) {
-                try {
-                    $logger = $this->container->make(LoggerInterface::class);
-                } catch (\Exception $e) {
-                    throw $e;
-                }
-
-                $response = $this->render(app()->request, $e);
-
-                $logger->error(
-                    $e->getMessage(),
-                    array_merge(
-                        $this->exceptionContext($e),
-                        $this->context(),
-                        ['exception' => $e, 'response' => $response]
-                    )
-                );
-                return false;
+         function (Throwable $e) {
+            try {
+                $logger = $this->container->make(LoggerInterface::class);
+            } catch (\Exception $e) {
+                throw $e;
             }
-        );
-    }
 
-    /**
-     * @inheritDoc
-     */
+            $response = $this->render(app()->request, $e);
+
+            $logger->error(
+                $e->getMessage(),
+                array_merge(
+                    $this->exceptionContext($e),
+                    $this->context(),
+                    ['exception' => $e, 'response' => $response]
+                )
+            );
+            return false;
+        };
+    }
     public function render($request, Throwable $e)
     {
         if (empty($e)) {
-            return parent::render($request, $e);
+            return warning(parent::render($request, $e));
         }
 
         if ($e instanceof BaseException) {
-            return $e->render($request);
+            return warning($e->render($request));
         }
 
         $status = method_exists($e, 'getStatusCode')
-            ? $e->getStatusCode()
+        ? $e->getStatusCode()
             : HttpResponse::HTTP_INTERNAL_SERVER_ERROR;
         $extra = (!config('app.debug'))
-            ? [] :
+        ? [] :
             [
                 'exception' => [
                     'name' => get_class($e),
@@ -102,7 +104,7 @@ class Handler extends ExceptionHandler
             ];
 
         if ($e instanceof AuthenticationException) {
-            return Response::error(
+            return error(
                 'Authentication failed',
                 HttpResponse::HTTP_UNAUTHORIZED,
                 $extra
@@ -110,7 +112,7 @@ class Handler extends ExceptionHandler
         }
 
         if ($e instanceof PDOException) {
-            return Response::error(
+            return error(
                 'Internal database error',
                 HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
                 $extra
@@ -118,7 +120,7 @@ class Handler extends ExceptionHandler
         }
 
         if ($e instanceof MethodNotAllowedException) {
-            return Response::error(
+            error(
                 'The specified method for the request is invalid',
                 HttpResponse::HTTP_METHOD_NOT_ALLOWED,
                 $extra
@@ -126,7 +128,7 @@ class Handler extends ExceptionHandler
         }
 
         if ($e instanceof NotFoundHttpException) {
-            return Response::error(
+            return error(
                 'The specified URL cannot be found',
                 HttpResponse::HTTP_NOT_FOUND,
                 $extra
@@ -146,13 +148,13 @@ class Handler extends ExceptionHandler
                 }
             );
 
-            return Response::error($reason, HttpResponse::HTTP_BAD_REQUEST, $extra);
+            return error($reason, HttpResponse::HTTP_BAD_REQUEST, $extra);
         }
 
         if ($this->isHttpException($e)) {
-            return Response::error('Request error', $status, $extra);
+            return error('Request error', $status, $extra);
         }
-        
-        return Response::error('Technical error. Try later', $status, $extra);
+
+        return error('Technical error. Try later', $status, $extra);
     }
 }
