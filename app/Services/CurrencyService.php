@@ -28,9 +28,9 @@ class CurrencyService extends BaseService implements ICurrencyService
 
 
 
-    public function addCurrency(string $name, string $code): Currency
+    public function addCurrency(string $description, string $code): Currency
     {
-        $currency = new Currency(['code' => $name, 'description' => $code]);
+        $currency = new Currency(['code' => $code, 'description' => $description]);
 
         $this->insert($currency); // Store the currency
 
