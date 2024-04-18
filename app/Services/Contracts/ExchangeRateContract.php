@@ -16,8 +16,9 @@ interface ExchangeRateContract
     /**
      * Gets list of exchange rates for a given date
      *
-     * @param string $date
+     * @param string|null $start_date
+     * @param string|null $end_date
      * @return ExchangeRate[]
      */
-    public function fetchByDate(string $date);
+    public function fetchByDate(string $start_date = null, string $end_date = null);
 }
