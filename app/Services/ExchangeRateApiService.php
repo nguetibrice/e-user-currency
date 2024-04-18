@@ -6,6 +6,7 @@ use App\Models\ExchangeRate;
 use App\Services\Contracts\ExchangeRateApiContract;
 use App\Exceptions\NotImplementedException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ExchangeRateApiService implements ExchangeRateApiContract
 {
@@ -16,12 +17,13 @@ class ExchangeRateApiService implements ExchangeRateApiContract
     public function fetch(string $currency): array
     {
         // todo return static values for all currencies. keep in mind that this is a temporary solution
+        Log::info("api key:".env("CURRENCY_API_KEY"). " && currency: $currency");
         $res = Http::acceptJson()
         ->withHeaders([
-            "X-CoinAPI-Key" => env("CURRENCY_API_KEY")
+            "X-CoinAPI-Key" => env("CURRENCY_API_KEY"),
         ])
         ->retry(3, 100)
-        ->get(env("CURRENCY_API_BASE_URL"). "/exchangerate/". strtoupper(env("CASHIER_CURRENCY")));
+        ->get("https://rest.coinapi.io/v1/exchangerate/". strtoupper($currency));
 
         if ($res->status() != 200 && $res->status() != 201) {
             return ["error" => $res->body()];

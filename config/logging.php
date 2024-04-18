@@ -1,6 +1,5 @@
 <?php
 
-use App\Utils\ElasticSearchFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -54,11 +53,11 @@ return [
 
     'channels' => [
         'stack' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
-            'formatter' => ElasticSearchFormatter::class,
+            'driver' => 'stack',
+            'channels' => ['single'],
+            'ignore_exceptions' => false,
         ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

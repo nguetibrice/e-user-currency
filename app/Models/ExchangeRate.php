@@ -14,7 +14,7 @@ class ExchangeRate extends Model
     use BaseModel;
 
     protected $fillable = [
-        "currency_id",
+        "target_currency",
         "rate"
     ];
 }

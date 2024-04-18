@@ -22,8 +22,14 @@ class ExchangeRateService implements ExchangeRateContract
     /**
      * @inheritDoc
      */
-    public function fetchByDate(string $date)
+    public function fetchByDate(string $start_date = null, string $end_date = null)
     {
-        return ExchangeRate::whereBetween("created_at", [$date." 00:00" , $date." 23:59"])->get();
+        if ($start_date == null && $end_date == null) {
+            return ExchangeRate::orderBy("created_at", "desc")->get();
+        } elseif ($end_date == null) {
+            return ExchangeRate::where("created_at", ">=" , $start_date." 00:00")->orderBy("created_at", "desc")->get();
+        } else {
+            return ExchangeRate::whereBetween("created_at", [$start_date." 00:00" , $end_date." 23:59"])->orderBy("created_at", "desc")->get();
+        }
     }
 }
