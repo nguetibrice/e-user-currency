@@ -36,6 +36,16 @@ class CurrencyController extends Controller
     }
 
     /**
+     * Display the specified currency.
+     */
+    public function getByCode(string $code)
+    {
+        $currency = $this->currencyService->findOneBy("code",strtoupper($code));
+        return success('show currency', 200, $currency->toArray());
+
+    }
+
+    /**
      * Store a newly created currency in storage.
      */
     public function store(Request $request)

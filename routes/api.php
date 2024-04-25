@@ -27,6 +27,7 @@ Route::get("/app-version",function (Request $request) {
 
 Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
 Route::get('/currency/show/{id}', [CurrencyController::class, 'show'])->name('currency.show');
+Route::get('/currency/by-code/{code}', [CurrencyController::class, 'getByCode'])->name('currency.by.code');
 Route::post('/currency/store', [CurrencyController::class, 'store'])->name('currency.store');
 Route::delete('/currency/delete/{id}', [CurrencyController::class, 'delete'])->name('currency.delete');
 Route::get('/test', [TestController::class, 'index']);
